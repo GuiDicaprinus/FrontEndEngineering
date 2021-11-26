@@ -20,6 +20,12 @@ const user_endpoint = async (req: NextApiRequest, res: NextApiResponse<DefaultRe
         if (body && !body.password || body.password.length < 4) {
             return res.status(400).json({error: 'Senha é obrigatorio'})
         }
+
+        const existingUserWithEmail = await UserModel.find({email : body.email})
+        if(existingUserWithEmail && existingUserWithEmail.length > 0){
+            return res.status(400).json({error : 'User already registered'})
+        }
+
         const user = {
             name: body.name,
             email: body.email,
