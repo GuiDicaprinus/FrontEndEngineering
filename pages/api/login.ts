@@ -15,7 +15,7 @@ const userLogin = async (req : NextApiRequest, res : NextApiResponse<DefaultResp
     }
 
     if(req.method === 'POST'){
-        const body = req.body as LoginRequest;
+        const body =req.body as LoginRequest;
         if(!body || !body.login || !body.password){
             res.status(400).json({error : 'Invalid user/password'})
         }

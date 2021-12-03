@@ -27,8 +27,8 @@ const user_endpoint = async (req: NextApiRequest, res: NextApiResponse<DefaultRe
         }
 
         const user = {
-            name: body.name,
-            email: body.email,
+            name: body.name.trim(),
+            email: body.email.trim(),
             password: md5(body.password)
         }
 
