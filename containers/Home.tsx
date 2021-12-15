@@ -1,21 +1,24 @@
 import { NextPage } from "next";
-import {useEffect, useState} from "react";
+import { useEffect } from "react";
+import { useState } from "react";
 import { Filter } from "../components/Filter";
 import { Footer } from "../components/Footer";
 import { Header } from "../components/Header";
 import { List } from "../components/List";
-import {executeRequest} from "../services/api";
-
+import { executeRequest } from "../services/api";
+import { Task } from "../types/Task";
+import {CrudModal} from '../components/Modal';
 type HomeProps = {
     setToken(s: string) : void
 }
 
 export const Home : NextPage<HomeProps> = ({setToken}) => {
 
+    // state Filter
     const [previsionDateStart, setPrevisionDateStart] = useState('');
     const [previsionDateEnd, setPrevisionDateEnd] = useState('');
     const [status, setStatus] = useState('0');
-    const [tasks, setTasks] = useState([]);
+    const [tasks, setTasks] = useState<Task[]>([]);
 
     const sair = () =>{
         localStorage.removeItem('accessToken');
@@ -37,7 +40,7 @@ export const Home : NextPage<HomeProps> = ({setToken}) => {
 
             const result = await executeRequest('task'+filter, 'GET');
             if(result && result.data){
-                setTasks(result.data);
+                setTasks(result.data as Task[]);
             }
         }catch(e){
             console.log(e);
@@ -48,9 +51,49 @@ export const Home : NextPage<HomeProps> = ({setToken}) => {
         getFilteredList();
     }, [status, previsionDateStart, previsionDateEnd]);
 
+
+    // state Modal
+    const [showModal, setShowModal] = useState(false);
+    const [errorMsg, setErrorMsg] = useState('');
+    const [taskName, setTaskName] = useState('');
+    const [previsionDate, setPrevisionDate] = useState('');
+
+    const closeModal = () => {
+        setShowModal(false);
+        setErrorMsg('');
+        setTaskName('');
+        setPrevisionDate('');
+    }
+
+    const doSave = async () => {
+        try{
+            if(!taskName || !previsionDate){
+                setErrorMsg('Favor preencher nome e data de previsão');
+                return;
+            }
+
+            const body = {
+                taskName,
+                previsionDate
+            }
+
+            await executeRequest('task', 'POST', body);
+            await getFilteredList();
+            closeModal();
+        }catch(e : any){
+            if(e?.response?.data?.error){
+                console.log(e?.response);
+                setErrorMsg(e?.response?.data?.error);
+                return;
+            }
+            console.log(e);
+            setErrorMsg('Ocorreu erro ao cadastrar tarefa, tente novamenete');
+        }
+    }
+
     return (
         <>
-            <Header sair={sair}/>
+            <Header sair={sair} showModal={() => setShowModal(true)}/>
             <Filter
                 previsionDateStart={previsionDateStart}
                 previsionDateEnd={previsionDateEnd}
@@ -59,7 +102,17 @@ export const Home : NextPage<HomeProps> = ({setToken}) => {
                 setPrevisionDateEnd={setPrevisionDateEnd}
                 setStatus={setStatus}
             />
-            <List tasks={tasks}/>
-            <Footer />
+            <List tasks={tasks} getFilteredList={getFilteredList}/>
+            <Footer showModal={() => setShowModal(true)}/>
+            <CrudModal
+                showModal={showModal}
+                errorMsg={errorMsg}
+                taskName={taskName}
+                setTaskName={setTaskName}
+                previsionDate={previsionDate}
+                setPrevisionDate={setPrevisionDate}
+                closeModal={closeModal}
+                doSave={doSave}
+            />
         </>);
 }

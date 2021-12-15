@@ -1,6 +1,6 @@
 export type Task = {
     _id: string,
-    name : string,
+    taskName : string,
     previsionDate : string,
     finishDate? : string
 }
