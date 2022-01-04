@@ -83,7 +83,7 @@ const updateTask = async (req: NextApiRequest, res: NextApiResponse, userId: str
 
     const previsionDate = moment(body.previsionDate);
 
-    task.name = body.taskName;
+    task.taskName = body.taskName;
     task.previsionDate = previsionDate;
     task.finishDate = body.finishDate ? moment(body.finishDate) : null;
 
